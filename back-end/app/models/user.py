@@ -12,7 +12,6 @@ class User(TimestampMixin, Base):
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     document: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True)
-    is_superuser: Mapped[bool] = mapped_column(default=False)
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, full_name='{self.full_name}', email='{self.email}')>"
