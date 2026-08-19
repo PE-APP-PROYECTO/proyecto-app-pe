@@ -4,6 +4,8 @@ from app.database import Base
 from app.models.mixins import TimestampMixin
 
 class User(TimestampMixin, Base):
+    """Representa un usuario del sistema."""
+
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

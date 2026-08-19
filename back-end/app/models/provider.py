@@ -8,6 +8,8 @@ if TYPE_CHECKING:
     from app.models.product import Product
 
 class Provider(TimestampMixin, Base):
+    """Representa un proveedor externo de productos."""
+
     __tablename__ = "providers"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

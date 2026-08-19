@@ -8,6 +8,8 @@ if TYPE_CHECKING:
     from app.models.product import Product
 
 class Brand(TimestampMixin, Base):
+    """Representa una marca de producto."""
+
     __tablename__ = "brands"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
