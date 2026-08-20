@@ -5,6 +5,7 @@ import json
 import os
 
 from app.database import Base, engine, SessionLocal
+import app.models  # noqa: F401 - necesario para registrar los modelos en Base.metadata
 
 app = FastAPI(title="tecApp Backend")
 
