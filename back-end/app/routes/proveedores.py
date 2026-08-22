@@ -4,8 +4,8 @@ from sqlalchemy.exc import IntegrityError
 
 router = APIRouter(prefix="/proveedores",tags=["Proveedores"])
 
-@router.post("/", response_model=schemas.ProveedorOut, status_code=status.HTTP_201_CREATED)
-def crear_proveedor(proveedor:schemas.ProveedorBase, db:Session=Depends(database.get_db)):
+@router.post("/", response_model=, status_code=status.HTTP_201_CREATED)
+def crear_proveedor(proveedor:'', db:Session=Depends(database.get_db)):
     try:
         reusltado = proveedor_service.crear_proveedor_service(db, proveedor)
         return reusltado
@@ -17,22 +17,22 @@ def crear_proveedor(proveedor:schemas.ProveedorBase, db:Session=Depends(database
     except Exception:
         raise HTTPException(status_code=500,detail="Error interno en el servidor")
 
-@router.get("/", response_model=list[schemas.ProveedorOut])
+@router.get("/", response_model=list[])
 def mostrar_proveedor(db:Session=Depends(database.get_db)):
     try:
         return proveedor_service.mostrar_proveedor_service(db)
     except Exception:
         raise HTTPException(status_code=500,detail="Error al mostrar proveedores")
 
-@router.get("/{id}", response_model=schemas.ProveedorOut)
+@router.get("/{id}", response_model=)
 def mostrar_por_id(id:int,db:Session=Depends(database.get_db)):
     resultado = proveedor_service.mostrar_por_id_service(db,id)
     if not resultado:
         raise HTTPException(status_code=404,detail=f"Proveedor con id {id} no encontrado")
     return resultado
 
-@router.put("/{id}", response_model=schemas.ProveedorOut)
-def actualizar_proveedor(id:int,datos=schemas.ProveedorBase,db:Session=Depends(database.get_db)):
+@router.put("/{id}", response_model=)
+def actualizar_proveedor(id:int,datos='',db:Session=Depends(database.get_db)):
     try:
         resultado = proveerdor_service.actualizar_proveedor_service(db,id,datos)
         if not resultado:
