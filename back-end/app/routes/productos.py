@@ -4,8 +4,8 @@ from sqlalchemy.exc import IntegrityError
 
 router = APIRouter(prefix="/productos", tags=["Productos"])
 
-@router.post("/", response_model=schemas.ProductoOut, status_code=status.HTTP_201_CREATED)
-def crear_producto(producto:schemas.ProductoBase,db:Session=Depends(database.get_db)):
+@router.post("/", response_model=, status_code=status.HTTP_201_CREATED)
+def crear_producto(producto:'',db:Session=Depends(database.get_db)):
     try:
         resultado = producto_service.crear_producto_service(db,producto)
         return resultado
@@ -17,22 +17,22 @@ def crear_producto(producto:schemas.ProductoBase,db:Session=Depends(database.get
     except Exception:
         raise HTTPException(status_code=500,detail="Error interno del servidor")
 
-@router.get("/", response_model=list[schemas.ProductoOut])
+@router.get("/", response_model=list[])
 def mostrar_producto(db:Session=Depends(database.get_db)):
     try:
         return producto_service.mostrar_producto_service(db)
     except Exception:
         raise HTTPException(status_code=500,detail="Error al mostrar producto")
 
-@router.get("/{id}", response_model=schemas.ProductoOut)
+@router.get("/{id}", response_model=)
 def mostrar_por_id(id:int,db:Session=Depends(database.get_db)):
     resultado = producto_service.mostrar_por_id_service(db, id)
     if not resultado:
         raise HTTPException(status_code=404,detail=f"Producto con id {id} no encontrado")
     return resultado
 
-@router.put("/{id}", response_model=schemas.ProductoOut)
-def actualizar_producto(id:int,datos=schemas.ProductoBase,db:Session=Depends(database.get_db)):
+@router.put("/{id}", response_model=)
+def actualizar_producto(id:int,datos='',db:Session=Depends(database.get_db)):
     try:
         resultado = producto_service.actualizar_producto_service(db,id,datos)
         if not resultado:
