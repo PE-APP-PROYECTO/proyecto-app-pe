@@ -16,10 +16,20 @@ from app.services.validators import (
 
 
 class ProductService(BaseService):
+    """Servicio para gestionar productos con filtros y reglas de negocio."""
+
     model = Product
     not_found_message = "Producto no encontrado"
 
     def create(self, data: Dict[str, Any]) -> Product:
+        """Crea un producto nuevo validando datos, referencia y relaciones.
+
+        Args:
+            data: Diccionario con los datos del producto.
+
+        Returns:
+            El producto creado en la base de datos.
+        """
         data = self._normalize(data)
 
         self._validate_required(data)
@@ -31,6 +41,15 @@ class ProductService(BaseService):
         return super().create(data)
 
     def update(self, product_id: int, data: Dict[str, Any]) -> Product:
+        """Actualiza un producto de forma parcial.
+
+        Args:
+            product_id: Identificador del producto a actualizar.
+            data: Diccionario con los campos que se van a modificar.
+
+        Returns:
+            El producto con los cambios aplicados.
+        """
         data = self._normalize(data)
 
         if "reference" in data:
@@ -69,7 +88,19 @@ class ProductService(BaseService):
         brand_id: Optional[int] = None,
         provider_id: Optional[int] = None,
     ) -> List[Product]:
-        """Lista productos con búsqueda y filtros por marca/proveedor."""
+        """Lista productos con búsqueda y filtros por marca/proveedor.
+
+        Args:
+            skip: Cantidad de registros a omitir (paginación).
+            limit: Cantidad máxima de registros a devolver.
+            only_active: Si es True, devuelve solo productos activos.
+            search: Texto libre para buscar en referencia, descripción o color.
+            brand_id: Filtra productos de una marca específica.
+            provider_id: Filtra productos de un proveedor específico.
+
+        Returns:
+            Lista de productos que cumplen los criterios.
+        """
         query = select(Product)
 
         if only_active:
@@ -116,7 +147,7 @@ class ProductService(BaseService):
     # ------------------------------------------------------------------
 
     def _normalize(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Permite recibir 'brand'/'provider' como alias de las llaves foráneas."""
+        """Convierte alias del frontend ('brand'/'provider') a llaves foráneas."""
         data = dict(data)
 
         if "brand" in data:
@@ -127,6 +158,7 @@ class ProductService(BaseService):
         return data
 
     def _validate_required(self, data: Dict[str, Any]) -> None:
+        """Valida que vengan todos los campos obligatorios del producto."""
         validate_required(data.get("reference"), "reference")
         validate_required(data.get("price"), "price")
         validate_required(data.get("color"), "color")
@@ -135,6 +167,7 @@ class ProductService(BaseService):
         validate_required(data.get("provider_id"), "provider_id")
 
     def _validate_constraints(self, data: Dict[str, Any]) -> None:
+        """Valida longitudes máximas y valores numéricos no negativos."""
         validate_max_length(data.get("reference"), 50, "reference")
         validate_max_length(data.get("color"), 50, "color")
         validate_max_length(data.get("description"), 255, "description")
@@ -146,6 +179,7 @@ class ProductService(BaseService):
     def _ensure_unique_reference(
         self, reference: str, exclude_id: Optional[int] = None
     ) -> None:
+        """Lanza ConflictError si ya existe otro producto con la misma referencia."""
         query = select(Product.id).where(Product.reference == reference)
 
         if exclude_id is not None:
@@ -157,12 +191,14 @@ class ProductService(BaseService):
             )
 
     def _ensure_brand_exists(self, brand_id: int) -> None:
+        """Lanza ValidationError si la marca no existe o no está activa."""
         brand = self.db.get(Brand, brand_id)
 
         if brand is None or not brand.is_active:
             raise ValidationError("La marca indicada no existe o no está activa.")
 
     def _ensure_provider_exists(self, provider_id: int) -> None:
+        """Lanza ValidationError si el proveedor no existe o no está activo."""
         provider = self.db.get(Provider, provider_id)
 
         if provider is None or not provider.is_active:
