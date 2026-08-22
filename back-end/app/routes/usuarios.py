@@ -4,8 +4,8 @@ from sqlalchemy.exc import IntegrityError
 
 router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 
-@router.post("/", response_model=schemas.UserOut, status_code=status.HTTP_201_CREATED)
-def crear_usuario(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
+@router.post("/", response_model= , status_code=status.HTTP_201_CREATED)
+def crear_usuario(user: '', db: Session = Depends(database.get_db)):
     try:
         resultado = usuario_service.crear_usuario_service(db, user)
         return resultado
@@ -17,22 +17,22 @@ def crear_usuario(user: schemas.UserCreate, db: Session = Depends(database.get_d
     except Exception:
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
-@router.get("/", response_model=list[schemas.UserOut])
+@router.get("/", response_model=list[])
 def mostrar_usuario(db: Session = Depends(database.get_db)):
     try:
         return usuario_service.mostrar_usuario_service(db)
     except Exception:
         raise HTTPException(status_code=500, detail="Error al mostrar usuarios")
 
-@router.get("/{id}", response_model=schemas.UserOut)
+@router.get("/{id}", response_model=)
 def mostrar_por_id(id: int, db: Session = Depends(database.get_db)):
     resultado = usuario_service.mostrar_por_id_service(db, id)
     if not resultado:
         raise HTTPException(status_code=404, detail=f"Usuario con id {id} no encontrado")
     return resultado
 
-@router.put("/{id}", response_model=schemas.UserOut)
-def actualizar_usuario(id: int, datos: schemas.UserCreate, db: Session = Depends(database.get_db)):
+@router.put("/{id}", response_model=)
+def actualizar_usuario(id: int, datos: '', db: Session = Depends(database.get_db)):
     try:
         resultado = usuario_service.actualizar_usuario_service(db, id, datos)
         if not resultado:
