@@ -19,6 +19,9 @@ class Settings:
     )
     JWT_SECRET: str = os.getenv("JWT_SECRET", "supersecreto")
     JWT_ALGORITHM: str = "HS256"
+    # Credenciales de acceso desde el .env
+    ADMIN_USER: str = os.getenv("ADMIN_USER", "admin")
+    ADMIN_PASSWORD_HASH: str = os.getenv("ADMIN_PASSWORD_HASH", "")
 
 
 settings = Settings()
