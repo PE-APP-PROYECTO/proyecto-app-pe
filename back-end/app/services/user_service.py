@@ -11,7 +11,7 @@ from app.services.exceptions import (
     NotFoundError,
     UnauthorizedError,
 )
-from app.services.security import hash_password, verify_password
+from app.utils import hash_password, verify_password
 from app.services.validators import (
     validate_email,
     validate_max_length,
