@@ -6,8 +6,9 @@ from sqlalchemy import or_, select
 
 from app.models import Brand, Product, Provider
 from app.services.base_service import BaseService
-from app.services.exceptions import ConflictError, ValidationError
-from app.services.validators import (
+from app.utils import (
+    ConflictError,
+    ValidationError,
     validate_max_length,
     validate_non_negative,
     validate_non_negative_int,

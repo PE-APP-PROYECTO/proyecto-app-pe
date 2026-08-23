@@ -8,7 +8,7 @@ cuando alguna regla no se cumple.
 import re
 from typing import Any
 
-from app.services.exceptions import ValidationError
+from app.utils.exceptions import ValidationError
 
 EMAIL_REGEX = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
 
