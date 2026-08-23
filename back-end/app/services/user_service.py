@@ -6,13 +6,11 @@ from sqlalchemy import select
 
 from app.models import User
 from app.services.base_service import BaseService
-from app.services.exceptions import (
+from app.utils import hash_password, verify_password
+from app.utils import (
     ConflictError,
     NotFoundError,
     UnauthorizedError,
-)
-from app.utils import hash_password, verify_password
-from app.services.validators import (
     validate_email,
     validate_max_length,
     validate_min_length,

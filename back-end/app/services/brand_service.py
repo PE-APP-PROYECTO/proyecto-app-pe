@@ -6,8 +6,7 @@ from sqlalchemy import select
 
 from app.models import Brand, Product
 from app.services.base_service import BaseService
-from app.services.exceptions import ConflictError
-from app.services.validators import validate_max_length, validate_required
+from app.utils import ConflictError, validate_max_length, validate_required
 
 
 class BrandService(BaseService):

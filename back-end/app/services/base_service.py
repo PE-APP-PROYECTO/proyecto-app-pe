@@ -10,7 +10,7 @@ from typing import Any, Dict, List
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.services.exceptions import NotFoundError
+from app.utils import NotFoundError
 
 
 class BaseService:
