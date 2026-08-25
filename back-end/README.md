@@ -68,6 +68,7 @@ para iniciar el servidor en modo desarrollo con recarga automática:
 
 ```bash
 uvicorn app.main:app --reload
+python -m app.main
 ```
 
 
@@ -127,6 +128,8 @@ docker compose -f app/db/docker-compose.yml up -d
 
 # Iniciar contenedor en Windows (PowerShell / CMD)
 docker compose -f app/db/docker-compose.yml up -d
+o
+docker compose --env-file ..\.env up -d
 ```
 3. Gestión de Migraciones con Alembic
 

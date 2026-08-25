@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from app.config import settings
 from app.schemas.token import TokenData
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/token")
 
 # --- Generación de Token JWT ---
 def  create_access_token(data: dict, expires_delta: timedelta | None = None)-> str:
@@ -48,7 +48,7 @@ def get_current_user_with_role(allowed_roles: list[str]):
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="No tienes los permisos necesarios para acceder a este recurso",
             )
-    
+
         return TokenData(username=username, role=role)
 
     return dependency

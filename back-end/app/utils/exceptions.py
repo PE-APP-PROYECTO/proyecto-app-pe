@@ -48,11 +48,11 @@ class UnauthorizedError(ServiceError):
     status_code = 401
 
     def __init__(self, message: str = "No autorizado"):
-        super().__init__(message)"""Excepciones personalizadas de la capa de servicios.
-
-Permiten que los servicios reporten errores de negocio
-sin depender de HTTP ni del framework web.
-"""
+        super().__init__(message)
+        """Excepciones personalizadas de la capa de servicios.
+          Permiten que los servicios reporten errores de negocio
+          sin depender de HTTP ni del framework web.
+          """
 
 
 class ServiceError(Exception):
