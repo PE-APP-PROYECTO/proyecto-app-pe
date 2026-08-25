@@ -1,20 +1,17 @@
 """Lógica de negocio para los usuarios del sistema."""
 
-from typing import Any, Dict, Optional
-
+from typing import List, Optional
 from sqlalchemy import select
 
 from app.models import User
+from app.schemas.user import UsuarioCreateSchema, UserUpdateSchema, PasswordUpdateSchema
 from app.services.base_service import BaseService
-from app.utils import hash_password, verify_password
 from app.utils import (
     ConflictError,
     NotFoundError,
     UnauthorizedError,
-    validate_email,
-    validate_max_length,
-    validate_min_length,
-    validate_required,
+    hash_password,
+    verify_password,
 )
 
 
@@ -24,74 +21,60 @@ class UserService(BaseService):
     model = User
     not_found_message = "Usuario no encontrado"
 
-    def create(self, data: Dict[str, Any]) -> User:
-        """Crea un usuario nuevo con la contraseña hasheada.
+    def create(self, schema: UsuarioCreateSchema) -> User:
+        """Crea un usuario nuevo descartando confirm_password y hasheando el password."""
+        self._ensure_unique_email(schema.email)
+        self._ensure_unique_document(schema.document)
 
-        Args:
-            data: Diccionario con full_name, email, document y password plana.
+        # Convertimos a dict y descartamos la confirmación de contraseña
+        user_data = schema.model_dump()
+        user_data.pop("confirm_password", None)
 
-        Returns:
-            El usuario creado en la base de datos.
-        """
-        data = self._normalize(data)
+        # Mapeamos 'fullName' del schema al 'full_name' del modelo SQLAlchemy si usas snake_case en BD
+        if "fullName" in user_data:
+            user_data["full_name"] = user_data.pop("fullName")
 
-        self._validate_data(data)
-        self._ensure_unique_email(data["email"])
-        self._ensure_unique_document(data["document"])
+        user_data["hashed_password"] = hash_password(user_data.pop("password"))
 
-        data["hashed_password"] = hash_password(data.pop("password"))
+        return super().create(user_data)
 
-        return super().create(data)
+    def update(self, user_id: int, schema: UserUpdateSchema) -> User:
+        """Actualiza la información del perfil del usuario."""
+        update_data = schema.model_dump(exclude_unset=True)
 
-    def update(self, user_id: int, data: Dict[str, Any]) -> User:
-        """Actualiza un usuario de forma parcial.
+        if not update_data:
+            return self.get_by_id(user_id)
 
-        Si se envía password, la hashea y la guarda como hashed_password.
+        if "fullName" in update_data:
+            update_data["full_name"] = update_data.pop("fullName")
 
-        Args:
-            user_id: Identificador del usuario a actualizar.
-            data: Diccionario con los campos que se van a modificar.
+        if "email" in update_data:
+            self._ensure_unique_email(update_data["email"], exclude_id=user_id)
 
-        Returns:
-            El usuario con los cambios aplicados.
-        """
-        data = self._normalize(data)
+        if "document" in update_data:
+            self._ensure_unique_document(update_data["document"], exclude_id=user_id)
 
-        if "full_name" in data:
-            validate_required(data["full_name"], "full_name")
-            validate_max_length(data["full_name"], 100, "full_name")
+        return super().update(user_id, update_data)
 
-        if "email" in data:
-            validate_required(data["email"], "email")
-            validate_email(data["email"])
-            self._ensure_unique_email(data["email"], exclude_id=user_id)
+    def change_password(self, user_id: int, schema: PasswordUpdateSchema) -> None:
+        """Verifica la contraseña actual y actualiza por la nueva."""
+        user = self.get_by_id(user_id)
 
-        if "document" in data:
-            validate_required(data["document"], "document")
-            validate_max_length(data["document"], 20, "document")
-            self._ensure_unique_document(data["document"], exclude_id=user_id)
+        # Validar contraseña actual contra la BD
+        if not verify_password(schema.current_password, user.hashed_password):
+            raise UnauthorizedError("La contraseña actual es incorrecta.")
 
-        if "password" in data:
-            validate_required(data["password"], "password")
-            validate_min_length(data["password"], 8, "password")
-            data["hashed_password"] = hash_password(data.pop("password"))
+        # Guardar la nueva contraseña encriptada
+        user.hashed_password = hash_password(schema.new_password)
+        self.db.commit()
 
-        return super().update(user_id, data)
+    def list(self) -> List[User]:
+        """Obtiene la lista de todos los usuarios."""
+        query = select(User)
+        return self.db.scalars(query).all()
 
     def authenticate(self, email: str, password: str) -> User:
-        """Verifica credenciales y devuelve el usuario activo.
-
-        Args:
-            email: Correo del usuario.
-            password: Contraseña en texto plano a verificar.
-
-        Returns:
-            El usuario autenticado.
-
-        Raises:
-            UnauthorizedError: Si las credenciales no coinciden o el usuario
-                no está activo.
-        """
+        """Verifica credenciales y devuelve el usuario activo."""
         user = self.db.scalar(select(User).where(User.email == email))
 
         if user is None or not verify_password(password, user.hashed_password):
@@ -103,14 +86,7 @@ class UserService(BaseService):
         return user
 
     def get_by_email(self, email: str) -> User:
-        """Devuelve un usuario por su correo o lanza NotFoundError.
-
-        Args:
-            email: Correo del usuario a buscar.
-
-        Returns:
-            El usuario encontrado.
-        """
+        """Devuelve un usuario por su correo o lanza NotFoundError."""
         user = self.db.scalar(select(User).where(User.email == email))
 
         if user is None:
@@ -121,32 +97,6 @@ class UserService(BaseService):
     # ------------------------------------------------------------------
     # Helpers internos
     # ------------------------------------------------------------------
-
-    def _normalize(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Acepta alias cómodos y descarta claves que no deben inyectarse."""
-        data = dict(data)
-
-        if "name" in data:
-            data["full_name"] = data.pop("name")
-
-        # El hash lo genera siempre el servicio, nunca se recibe de afuera
-        data.pop("hashed_password", None)
-
-        return data
-
-    def _validate_data(self, data: Dict[str, Any]) -> None:
-        """Valida campos obligatorios, longitudes, correo y contraseña mínima."""
-        validate_required(data.get("full_name"), "full_name")
-        validate_required(data.get("email"), "email")
-        validate_required(data.get("document"), "document")
-        validate_required(data.get("password"), "password")
-
-        validate_max_length(data.get("full_name"), 100, "full_name")
-        validate_max_length(data.get("email"), 100, "email")
-        validate_max_length(data.get("document"), 20, "document")
-
-        validate_email(data["email"])
-        validate_min_length(data["password"], 8, "password")
 
     def _ensure_unique_email(
         self, email: str, exclude_id: Optional[int] = None
