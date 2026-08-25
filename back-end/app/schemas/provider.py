@@ -4,13 +4,13 @@ from pydantic import BaseModel, EmailStr, Field, ConfigDict
 # --- CREACIÓN ---
 class CreateProviderSchema(BaseModel):
     company_name: str = Field(..., min_length=5, max_length=100, description="Razón social del proveedor")
-    
+
     # Solo permite números o guiones (ej. 12345678-9)
     nit: str = Field(..., pattern=r"^[0-9\-]{8,12}$", description="NIT o número de identificación fiscal")
-    
+
     # Solo permite números y opcionalmente el signo + al inicio
     phone: str = Field(..., pattern=r"^\+?[0-9]{8,13}$", description="Número de teléfono de contacto")
-    
+
     email: EmailStr
     address: str = Field(..., min_length=1, max_length=100, description="Dirección de la empresa")
 
