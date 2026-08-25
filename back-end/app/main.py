@@ -1,15 +1,17 @@
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 
-import json
-import os
+from app.config import settings
+from app.core.exception_handlers import register_exception_handlers
+from app.database import Base, engine
+from app.routes.index import router as api_router
 
-from app.database import Base, engine, SessionLocal
 import app.models  # noqa: F401 - necesario para registrar los modelos en Base.metadata
 
-app = FastAPI(title="tecApp Backend")
+print("cargando backend tecApp...")
 
-Base.metadata.create_all(bind=engine)
+app = FastAPI(title="tecApp Backend")
 
 # Configurar CORS para permitir peticiones desde el frontend
 app.add_middleware(
@@ -20,8 +22,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-print("cargando backend tecApp...")
+Base.metadata.create_all(bind=engine)
+
+register_exception_handlers(app)
+
+app.include_router(api_router, prefix="/api/v1")
 
 @app.get("/")
 def read_root():
     return {"message": "¡Backend de tecApp funcionando correctamente!"}
+
+if __name__ == "__main__":
+    uvicorn.run("app.main:app", host="127.0.0.1", port=settings.APP_PORT, reload=True)
+
