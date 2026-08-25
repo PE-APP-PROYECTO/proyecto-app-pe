@@ -1,12 +1,13 @@
 """Lógica de negocio para las marcas."""
 
-from typing import Any, Dict, Optional
+from typing import List, Optional
 
 from sqlalchemy import select
 
 from app.models import Brand, Product
 from app.services.base_service import BaseService
-from app.utils import ConflictError, validate_max_length, validate_required
+from app.utils import ConflictError, NotFoundError
+from app.schemas.brand import CreateBrandSchema, UpdateBrandSchema
 
 
 class BrandService(BaseService):
@@ -15,7 +16,7 @@ class BrandService(BaseService):
     model = Brand
     not_found_message = "Marca no encontrada"
 
-    def create(self, data: Dict[str, Any]) -> Brand:
+    def create(self, schema: CreateBrandSchema) -> Brand:
         """Crea una marca nueva validando datos y unicidad del nombre.
 
         Args:
@@ -24,11 +25,10 @@ class BrandService(BaseService):
         Returns:
             La marca creada en la base de datos.
         """
-        self._validate_data(data)
-        self._ensure_unique_name(data["name"])
-        return super().create(data)
+        self._ensure_unique_name(schema.name)
+        return super().create(schema.model_dump())
 
-    def update(self, brand_id: int, data: Dict[str, Any]) -> Brand:
+    def update(self, brand_id: int, schema: UpdateBrandSchema) -> Brand:
         """Actualiza una marca de forma parcial.
 
         Args:
@@ -38,16 +38,25 @@ class BrandService(BaseService):
         Returns:
             La marca con los cambios aplicados.
         """
-        if "name" in data:
-            validate_required(data["name"], "name")
-            validate_max_length(data["name"], 100, "name")
-            self._ensure_unique_name(data["name"], exclude_id=brand_id)
+        update_data = schema.model_dump(exclude_unset=True)
 
-        if "description" in data:
-            validate_required(data["description"], "description")
-            validate_max_length(data["description"], 255, "description")
+        if "name" in update_data:
+            self._ensure_unique_name(update_data["name"], exclude_id=brand_id)
 
-        return super().update(brand_id, data)
+        return super().update(brand_id, update_data)
+
+    def list(self) -> List[Brand]:
+        """Obtiene el listado de marcas usando la sesión de BD inyectada en BaseService."""
+        query = select(Brand)
+        return self.db.scalars(query).all()
+
+    def get_by_id(self, brand_id:int)-> Brand:
+      """Obtiene una marca por su ID o lanza NotFoundError si no existe."""
+      query = select(Brand).where(Brand.id == brand_id)
+      brand = self.db.scalar(query)
+      if not brand:
+        raise NotFoundError(f"Marca con ID {brand_id} no encontrada")
+      return brand
 
     def delete(self, brand_id: int) -> Brand:
         """Desactiva la marca si no tiene productos activos asociados.
@@ -64,12 +73,17 @@ class BrandService(BaseService):
             )
         return super().delete(brand_id)
 
-    def _validate_data(self, data: Dict[str, Any]) -> None:
-        """Valida campos obligatorios y longitudes máximas de la marca."""
-        validate_required(data.get("name"), "name")
-        validate_required(data.get("description"), "description")
-        validate_max_length(data.get("name"), 100, "name")
-        validate_max_length(data.get("description"), 255, "description")
+    def delete_logico(self, brand_id: int) -> Brand:
+      brand = self.get_by_id(brand_id)
+
+      if self._has_active_products(brand_id):
+        raise ConflictError(
+          "No se puede desactivar la marca por que tiene productos activos asociados"
+        )
+      brand.is_active = False
+      self.db.commit()
+      self.db.refresh(brand)
+      return brand
 
     def _ensure_unique_name(self, name: str, exclude_id: Optional[int] = None) -> None:
         """Lanza ConflictError si ya existe otra marca con el mismo nombre."""
