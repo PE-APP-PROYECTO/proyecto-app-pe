@@ -44,8 +44,8 @@ class PasswordUpdateSchema(BaseModel):  # Se renombró con P mayúscula (Buena p
 # ---  RESPUESTA DE CONSULTA ---
 class UserResponseSchema(BaseModel):
     id: int
-    fullName: str
+    full_name: str
     email: EmailStr
-    document: str
+    document: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
