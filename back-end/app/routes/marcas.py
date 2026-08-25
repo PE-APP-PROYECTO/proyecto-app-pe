@@ -1,52 +1,44 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Annotated
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
+
+from app.services.brand_service import BrandService
+from app.schemas.brand import BrandResponseSchema, CreateBrandSchema, UpdateBrandSchema
+from app.database import get_db
+from app.core.login import get_current_user_with_role
 
 router = APIRouter(prefix="/marcas", tags=["Marcas"])
 
-@router.post("/", response_model=, status_code=status.HTTP_201_CREATED)
-def crear_marca(marca: '', db: Session = Depends(database.get_db)):
-    try:
-        resultado = marca_service.crear_marca_service(db, marca)
-        return resultado
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(status_code=409, detail="El nombre de la marca ya está registrado")
-    except Exception:
-        raise HTTPException(status_code=500, detail="Error interno del servidor")
+# RUTA PÚBLICA: Obtener marcas
+@router.get("/", response_model=list[BrandResponseSchema])
+def listar_marcas(db: Session = Depends(get_db)):
+    service = BrandService(db)
+    return service.list()
 
-@router.get("/", response_model=list[])
-def listar_marcas(db: Session = Depends(database.get_db)):
-    try:
-        return marca_service.listar_marcas_service(db)
-    except Exception:
-        raise HTTPException(status_code=500, detail="Error al listar marcas")
+# RUTA PÚBLICA: Obtener marca por ID
+@router.get("/{brand_id}", response_model=BrandResponseSchema)
+def mostrar_por_id(brand_id: int, db: Session = Depends(get_db)):
+    service = BrandService(db)
+    return service.get_by_id(brand_id)
 
-@router.get("/{id}", response_model=)
-def mostrar_por_id(id: int, db: Session = Depends(database.get_db)):
-    resultado = marca_service.obtener_marca_service(db, id)
-    if not resultado:
-        raise HTTPException(status_code=404, detail=f"Marca con id {id} no encontrada")
-    return resultado
+# RUTAS PROTEGIDAS (Solo Admin)
+@router.post("/", response_model=BrandResponseSchema, dependencies=[Depends(get_current_user_with_role(["admin"]))], status_code=status.HTTP_201_CREATED)
+def crear_marca(schema: CreateBrandSchema, db: Session = Depends(get_db)):
+    service = BrandService(db)
+    return service.create(schema)
 
-@router.put("/{id}", response_model=)
-def actualizar_marca(id: int, datos: '', db: Session = Depends(database.get_db)):
-    try:
-        resultado = marca_service.actualizar_marca_service(db, id, datos)
-        if not resultado:
-            raise HTTPException(status_code=404, detail=f"Marca con id {id} no encontrada")
-        return resultado
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(status_code=409, detail="El nombre de la marca ya existe")
+@router.patch("/{brand_id}", response_model=BrandResponseSchema, dependencies=[Depends(get_current_user_with_role(["admin"]))])
+def actualizar_marca(brand_id: int, schema: UpdateBrandSchema, db: Session = Depends(get_db)):
+    service = BrandService(db)
+    return service.update(brand_id, schema)
 
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def eliminar_marca(id: int, db: Session = Depends(database.get_db)):
-    eliminado = marca_service.eliminar_marca_service(db, id)
-    if not eliminado:
-        raise HTTPException(status_code=404, detail=f"Marca con id {id} no encontrada")
+@router.delete("/{brand_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(get_current_user_with_role(["admin"]))])
+def eliminar_marca(brand_id: int, db: Session = Depends(get_db)):
+    service = BrandService(db)
+    service.delete(brand_id)
     return None
+
+@router.delete("/inactivate/{brand_id}", response_model=BrandResponseSchema, dependencies=[Depends(get_current_user_with_role(["admin"]))])
+def inactivate_brand(brand_id: int, db: Session = Depends(get_db)):
+    service = BrandService(db)
+    return service.delete_logico(brand_id)
