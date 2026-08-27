@@ -15,7 +15,7 @@ from app.core.login import get_current_user_with_role
 router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 
 # Toda la gestión de usuarios suele ser exclusiva para Administradores
-@router.post("/", response_model=UserResponseSchema, dependencies=[Depends(get_current_user_with_role(["admin"]))], status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=UserResponseSchema, status_code=status.HTTP_201_CREATED)
 def crear_usuario(user: UsuarioCreateSchema, db: Session = Depends(get_db)):
     service = UserService(db)
     return service.create(user)
