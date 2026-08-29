@@ -1,0 +1,17 @@
+# Variables de entorno (contiene la API Key real)
+.env
+
+# Caché de Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Archivo de pruebas internas (tiene credenciales)
+test_models.py
+generar_datos.py
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo

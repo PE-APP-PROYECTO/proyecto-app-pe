@@ -1,0 +1,31 @@
+reference,price,color,brand_id,stock,description,provider_id
+REF-1000,1004,Blanco,1,18,Teléfono móvil iPhone 15 color Blanco. Alta calidad y rendimiento.,1
+REF-1001,997,Plata,1,83,Teléfono móvil iPhone 15 color Plata. Alta calidad y rendimiento.,1
+REF-1002,1202,Plata,1,127,Teléfono móvil iPhone 15 Pro color Plata. Alta calidad y rendimiento.,1
+REF-1003,1208,Verde,1,85,Teléfono móvil iPhone 15 Pro color Verde. Alta calidad y rendimiento.,3
+REF-1004,1197,Negro,1,88,Teléfono móvil iPhone 15 Pro color Negro. Alta calidad y rendimiento.,2
+REF-1005,809,Blanco,1,123,Teléfono móvil iPhone 14 color Blanco. Alta calidad y rendimiento.,1
+REF-1006,800,Negro,1,32,Teléfono móvil iPhone 14 color Negro. Alta calidad y rendimiento.,3
+REF-1007,897,Azul,2,87,Teléfono móvil Galaxy S24 color Azul. Alta calidad y rendimiento.,1
+REF-1008,897,Verde,2,134,Teléfono móvil Galaxy S24 color Verde. Alta calidad y rendimiento.,2
+REF-1009,1296,Negro,2,148,Teléfono móvil Galaxy S24 Ultra color Negro. Alta calidad y rendimiento.,3
+REF-1010,1304,Plata,2,101,Teléfono móvil Galaxy S24 Ultra color Plata. Alta calidad y rendimiento.,2
+REF-1011,446,Plata,2,71,Teléfono móvil Galaxy A54 color Plata. Alta calidad y rendimiento.,1
+REF-1012,451,Azul,2,56,Teléfono móvil Galaxy A54 color Azul. Alta calidad y rendimiento.,3
+REF-1013,290,Verde,3,79,Teléfono móvil Redmi Note 13 color Verde. Alta calidad y rendimiento.,1
+REF-1014,308,Azul,3,39,Teléfono móvil Redmi Note 13 color Azul. Alta calidad y rendimiento.,2
+REF-1015,300,Negro,3,135,Teléfono móvil Redmi Note 13 color Negro. Alta calidad y rendimiento.,2
+REF-1016,359,Azul,3,125,Teléfono móvil Poco X6 Pro color Azul. Alta calidad y rendimiento.,3
+REF-1017,357,Plata,3,150,Teléfono móvil Poco X6 Pro color Plata. Alta calidad y rendimiento.,2
+REF-1018,859,Azul,3,149,Teléfono móvil Xiaomi 14 color Azul. Alta calidad y rendimiento.,3
+REF-1019,855,Plata,3,112,Teléfono móvil Xiaomi 14 color Plata. Alta calidad y rendimiento.,1
+REF-1020,246,Verde,4,143,Teléfono móvil Moto G84 color Verde. Alta calidad y rendimiento.,1
+REF-1021,248,Blanco,4,79,Teléfono móvil Moto G84 color Blanco. Alta calidad y rendimiento.,2
+REF-1022,393,Azul,4,80,Teléfono móvil Edge 40 Neo color Azul. Alta calidad y rendimiento.,3
+REF-1023,390,Plata,4,102,Teléfono móvil Edge 40 Neo color Plata. Alta calidad y rendimiento.,3
+REF-1024,449,Plata,5,108,Teléfono móvil Reno 10 color Plata. Alta calidad y rendimiento.,3
+REF-1025,448,Negro,5,105,Teléfono móvil Reno 10 color Negro. Alta calidad y rendimiento.,1
+REF-1026,447,Verde,5,50,Teléfono móvil Reno 10 color Verde. Alta calidad y rendimiento.,3
+REF-1027,215,Azul,5,74,Teléfono móvil A78 color Azul. Alta calidad y rendimiento.,2
+REF-1028,219,Verde,5,102,Teléfono móvil A78 color Verde. Alta calidad y rendimiento.,3
+REF-1029,213,Negro,5,117,Teléfono móvil A78 color Negro. Alta calidad y rendimiento.,2
