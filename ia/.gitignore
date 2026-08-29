@@ -10,6 +10,9 @@ __pycache__/
 test_models.py
 generar_datos.py
 
+# Archivos CSV de datos locales
+*.csv
+
 # IDE / Editor
 .vscode/
 .idea/
