@@ -1,0 +1,206 @@
+:root {
+  color: #111827;
+  background: #f3f4f6;
+  font-family:
+    Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #0f172a, #2563eb);
+}
+
+.login-card {
+  width: min(100%, 390px);
+  padding: 40px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+
+.registro-card {
+  width: min(100%, 680px);
+}
+
+.registro-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 18px;
+}
+
+.campo-auth-completo {
+  grid-column: 1 / -1;
+}
+
+.logo {
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.logo h1 {
+  margin: 0;
+  color: #111827;
+  font-size: 42px;
+}
+
+.logo span {
+  color: #2563eb;
+}
+
+.logo p {
+  margin: 6px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.logo-compacto {
+  margin-bottom: 20px;
+}
+
+.login-card h2 {
+  margin: 0 0 25px;
+  text-align: center;
+}
+
+.auth-heading {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.auth-heading h2 {
+  margin-bottom: 6px;
+}
+
+.auth-heading p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  outline: none;
+}
+
+.input-group input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.remember-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 24px;
+  color: #4b5563;
+  font-size: 13px;
+}
+
+.login-button {
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 11px;
+  color: #fff;
+  background: #2563eb;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.login-button:hover {
+  background: #1d4ed8;
+}
+
+.auth-alternative {
+  margin: 20px 0 0;
+  color: #4b5563;
+  font-size: 14px;
+  text-align: center;
+}
+
+.auth-alternative a {
+  color: #1d4ed8;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-alternative a:hover {
+  text-decoration: underline;
+}
+
+.alerta {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border: 1px solid;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.alerta-error {
+  color: #991b1b;
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.alerta-exito {
+  color: #166534;
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 30px 24px;
+  }
+
+  .registro-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .campo-auth-completo {
+    grid-column: auto;
+  }
+}
