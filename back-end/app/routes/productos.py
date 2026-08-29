@@ -3,11 +3,20 @@ from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.schemas.product import ProductResponseSchema, CreateProductSchema, UpdateProductSchema
+from app.schemas.product import ProductResponseSchema, CreateProductSchema, UpdateProductSchema, ChatProductRequestSchema, ChatProductResponseSchema
 from app.services.product_service import ProductService
 from app.core.login import get_current_user_with_role
 
 router = APIRouter(prefix="/productos", tags=["Productos"])
+
+# RUTA PÚBLICA: Consultar productos con IA (chatbot)
+@router.post("/chat", response_model=ChatProductResponseSchema)
+@router.post("/chat/", response_model=ChatProductResponseSchema, include_in_schema=False)
+def chat_con_ia(payload: ChatProductRequestSchema, db: Session = Depends(get_db)):
+    """Envía la pregunta y el listado de productos a la API externa de IA."""
+    service = ProductService(db)
+    result = service.chat_with_ai(payload.question)
+    return result
 
 # RUTA PÚBLICA: Cualquier usuario puede listar productos sin Token
 @router.get("/", response_model=List[ProductResponseSchema])
