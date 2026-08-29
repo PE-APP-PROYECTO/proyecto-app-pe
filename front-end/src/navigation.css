@@ -1,0 +1,111 @@
+.barra-superior {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  padding: 18px clamp(20px, 4vw, 50px);
+  background: #fff;
+  box-shadow: 0 4px 15px rgba(15, 23, 42, 0.08);
+}
+
+.logo-tecapp {
+  color: #111827;
+  font-size: 30px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.logo-tecapp span {
+  color: #2563eb;
+}
+
+.buscador {
+  display: flex;
+  flex: 1;
+  max-width: 600px;
+}
+
+.buscador input {
+  min-width: 0;
+  flex: 1;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px 0 0 10px;
+  outline: none;
+}
+
+.buscador input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.buscador button,
+.boton-salir {
+  border: 0;
+  color: #fff;
+  background: #2563eb;
+  cursor: pointer;
+}
+
+.buscador button {
+  padding: 0 22px;
+  border-radius: 0 10px 10px 0;
+}
+
+.usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #374151;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.boton-salir {
+  padding: 9px 14px;
+  border-radius: 9px;
+  background: #111827;
+}
+
+.menu {
+  display: flex;
+  justify-content: center;
+  gap: clamp(18px, 3vw, 35px);
+  padding: 14px 20px;
+  background: #111827;
+}
+
+.menu a {
+  padding: 4px 0;
+  color: #d1d5db;
+  border-bottom: 2px solid transparent;
+  text-decoration: none;
+}
+
+.menu a:hover,
+.menu a.active {
+  color: #fff;
+  border-bottom-color: #60a5fa;
+}
+
+@media (max-width: 820px) {
+  .barra-superior {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .buscador {
+    order: 3;
+    min-width: 100%;
+  }
+
+  .usuario span {
+    display: none;
+  }
+
+  .menu {
+    justify-content: flex-start;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
