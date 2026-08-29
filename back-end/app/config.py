@@ -28,5 +28,8 @@ class Settings:
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
     APP_PORT: int = int(os.getenv("APP_PORT", "8000"))
 
+    # API externa de IA (chatbot de productos)
+    AI_API_URL: str = os.getenv("AI_API_URL", "https://9nd3t0wm-8080.use.devtunnels.ms")
+
 
 settings = Settings()
