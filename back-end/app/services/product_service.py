@@ -1,10 +1,13 @@
 from typing import Any, Dict, List, Optional
+import httpx
+
 from sqlalchemy import or_, select
 
+from app.config import settings
 from app.models import Brand, Product, Provider
 from app.schemas.product import CreateProductSchema, UpdateProductSchema
 from app.services.base_service import BaseService
-from app.utils import ConflictError, ValidationError
+from app.utils import ConflictError, ServiceError, ValidationError
 
 class ProductService(BaseService):
     """Servicio para gestionar productos con filtros y reglas de negocio."""
@@ -105,10 +108,42 @@ class ProductService(BaseService):
                 "color": p.color,
                 "stock": p.stock,
                 "brand_id": p.brand_id,
+                "brand_name": p.brand.name,
                 "provider_id": p.provider_id,
+                "provider_name": p.provider.company_name,
             }
             for p in products
         ]
+
+    def chat_with_ai(self, question: str) -> Dict[str, Any]:
+        """Envía la pregunta y el listado de productos a la API externa de IA.
+        Args:
+            pregunta: Pregunta del usuario sobre los productos.
+        Returns:
+            La respuesta de la IA con formato {"respuesta": ..., "status": ...}.
+        Raises:
+            ServiceError: Si la API externa responde un error o hay fallo de conexión.
+        """
+        listado_productos = self.get_dataset_for_ai()
+
+        url = f"{settings.AI_API_URL.rstrip('/')}/chat"
+        payload = {"pregunta": question, "listado_productos": listado_productos}
+
+        try:
+            response = httpx.post(url, json=payload, timeout=60.0)
+        except httpx.HTTPError as exc:
+            raise ServiceError(f"No se pudo conectar con la API de IA: {exc}") from exc
+
+        if response.status_code != 200:
+            raise ServiceError(
+                f"La API de IA respondió con el estado {response.status_code}: {response.text}"
+            )
+
+        data = response.json()
+        return {
+            "answer": data.get("respuesta", ""),
+            "status": data.get("status", "ok"),
+        }
 
     # ------------------------------------------------------------------
     # Helpers internos
