@@ -1,4 +1,6 @@
 import os
+import json
+from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,9 +10,14 @@ from langchain_core.messages import SystemMessage, HumanMessage
 import uvicorn
 
 # =====================================================================
+# Rutas seguras (para que funcione desde cualquier terminal)
+# =====================================================================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# =====================================================================
 # Carga la API Key desde el archivo .env (nunca se sube a GitHub)
 # =====================================================================
-load_dotenv()
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 if not os.environ.get("GOOGLE_API_KEY"):
     print("❌ ERROR: No se encontró la variable GOOGLE_API_KEY.")
@@ -23,63 +30,32 @@ if not os.environ.get("GOOGLE_API_KEY"):
 # =====================================================================
 app = FastAPI(
     title="API Chatbot Tienda de Celulares",
-    description="Chatbot de IA que analiza datos de ventas y productos de una tienda de celulares usando Google Gemini.",
-    version="1.0.0"
+    description="Chatbot de IA que analiza datos de productos en tiempo real enviados por el Backend usando Google Gemini.",
+    version="2.0.0"
 )
 
-# CORS: Permite que el Frontend (u otros equipos) hagan peticiones desde el navegador
+# CORS: Permite que el Frontend / Backend hagan peticiones desde cualquier origen
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],       # Permite cualquier origen
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],       # Permite GET, POST, etc.
-    allow_headers=["*"],       # Permite cualquier header
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # =====================================================================
-# Carga de datos y modelo de IA (se ejecuta 1 sola vez al arrancar)
+# Inicialización del motor de IA
 # =====================================================================
-print("[*] Cargando bases de datos a la memoria de la IA...")
-try:
-    with open("productos.csv", "r", encoding="utf-8") as f:
-        csv_productos = f.read()
-    with open("ventas.csv", "r", encoding="utf-8") as f:
-        csv_ventas = f.read()
-    with open("marcas.csv", "r", encoding="utf-8") as f:
-        csv_marcas = f.read()
-    print("[OK] Datos cargados exitosamente.")
-except FileNotFoundError as e:
-    print(f"[ERROR] No se encontro el archivo {e.filename}")
-    print("   Asegúrate de que los archivos CSV estén en la misma carpeta.")
-    exit(1)
-
 print("[*] Iniciando el motor de Gemini...")
-llm = ChatGoogleGenerativeAI(model="gemini-3.6-flash", temperature=0)
-
-# Instrucción base con todos los datos de la tienda en memoria
-instruccion_sistema = f"""
-Eres el asistente experto de una tienda de celulares.
-Tu memoria contiene la base de datos completa de la tienda en formato CSV (Productos, Marcas y 10,000 registros de Ventas).
-Tu objetivo es responder a las preguntas del usuario analizando estos datos mentalmente y dando una respuesta clara en español.
-Intenta que las respuestas sean cortas y concisas en una sola iteración.
-
-DATOS DE PRODUCTOS:
-{csv_productos}
-
-DATOS DE MARCAS:
-{csv_marcas}
-
-HISTORIAL DE VENTAS:
-{csv_ventas}
-"""
-
+llm = ChatGoogleGenerativeAI(model="gemini-3.6-flash")
 print("[OK] Motor de IA listo.")
 
 # =====================================================================
-# Modelos de datos para la API (lo que recibe y lo que devuelve)
+# Modelos de datos para la API
 # =====================================================================
 class PreguntaRequest(BaseModel):
     pregunta: str
+    listado_productos: Optional[List[Dict[str, Any]]] = None
 
 class RespuestaResponse(BaseModel):
     respuesta: str
@@ -93,28 +69,53 @@ class RespuestaResponse(BaseModel):
 def health_check():
     """Verifica que el servidor está activo."""
     return {
-        "mensaje": "API del Chatbot de Tienda de Celulares esta activa.",
+        "mensaje": "API del Chatbot de Tienda de Celulares está activa.",
         "status": "ok",
-        "uso": "Envía un POST a /chat con JSON: {\"pregunta\": \"tu pregunta aquí\"}"
+        "version": "2.0.0",
+        "uso": "Envía un POST a /chat con JSON: {\"pregunta\": \"...\", \"listado_productos\": [{...}]}"
     }
 
 @app.post("/chat", response_model=RespuestaResponse)
 def chat(req: PreguntaRequest):
     """
-    Recibe una pregunta en lenguaje natural y devuelve la respuesta
-    del chatbot basada en los datos de la tienda.
+    Recibe una pregunta en lenguaje natural y opcionalmente el listado de productos
+    directamente desde el Backend, devolviendo la respuesta analizada por Gemini.
     """
     try:
-        # Creamos un historial fresco por cada petición (sin estado entre usuarios)
+        # Formatear el listado de productos si se envió en la petición
+        if req.listado_productos:
+            datos_json = json.dumps(req.listado_productos, ensure_ascii=False, indent=2)
+            contexto_productos = f"""
+LISTADO DE PRODUCTOS EN TIEMPO REAL (Enviado por Backend):
+{datos_json}
+"""
+        else:
+            contexto_productos = """
+(No se adjuntó lista de productos en esta petición. Responde amablemente de forma general o indica que no hay productos cargados actualmente).
+"""
+
+        instruccion_sistema = f"""Eres el asistente experto de una tienda de celulares.
+Tu objetivo es responder a las consultas analizando los datos de los productos que te son provistos en tiempo real.
+
+{contexto_productos}
+
+Instrucciones:
+1. Responde de forma clara, concisa y en español.
+2. Utiliza los datos provistos en el listado para responder sobre precios, características, stock, marcas o comparaciones.
+3. Si el usuario pregunta por un producto que no está en la lista, indícaselo cortésmente.
+4. No inventes información que no esté presente en los datos.
+"""
+
+        # Estructura del mensaje para LangChain
         historial = [
             SystemMessage(content=instruccion_sistema),
             HumanMessage(content=req.pregunta)
         ]
         
-        # 1 sola petición a Gemini
+        # Invocación a Gemini
         respuesta = llm.invoke(historial)
         
-        # Extraemos el texto limpio
+        # Extracción del texto
         texto = respuesta.content
         if isinstance(texto, list):
             texto = next(
@@ -135,7 +136,7 @@ def chat(req: PreguntaRequest):
 # =====================================================================
 if __name__ == "__main__":
     print("\n" + "="*55)
-    print(" CHATBOT DE TIENDA DE CELULARES - API REST")
+    print(" CHATBOT DE TIENDA DE CELULARES - API REST (v2.0 Dinámica)")
     print("="*55)
     print(" Servidor corriendo en: http://localhost:8080")
     print(" Documentacion interactiva: http://localhost:8080/docs")
