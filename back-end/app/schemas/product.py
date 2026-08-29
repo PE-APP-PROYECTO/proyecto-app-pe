@@ -33,3 +33,11 @@ class ProductResponseSchema(BaseModel):
     provider_id: int
 
     model_config = ConfigDict(from_attributes=True)
+
+# --- CHAT CON IA SOBRE PRODUCTOS ---
+class ChatProductRequestSchema(BaseModel):
+    question: str = Field(..., min_length=1, description="Pregunta del usuario sobre los productos")
+
+class ChatProductResponseSchema(BaseModel):
+    answer: str = Field(..., description="Respuesta generada por la IA")
+    status: str = Field(..., description="Estado de la respuesta de la API")
